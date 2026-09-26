@@ -1,0 +1,356 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>TransferPath SEP Planner</title>
+
+  <!-- Apply saved theme before paint to avoid a flash -->
+  <script>
+    try {
+      if (localStorage.getItem('theme') === 'dark') document.documentElement.classList.add('dark');
+    } catch (e) {}
+  </script>
+
+  <!-- Styles: prebuilt Tailwind + self-hosted fonts/icons, so the page is fully styled
+       offline, behind CDN-blocking networks, and in editor preview panes.
+       Tailwind goes last so utilities like `hidden` override Font Awesome's display rules. -->
+  <link rel="stylesheet" href="assets/vendor/inter/inter.css" />
+  <link rel="stylesheet" href="assets/vendor/fontawesome/css/all.min.css" />
+  <link rel="stylesheet" href="assets/tailwind.css" />
+
+  <!-- Tailwind (CDN): optional live compiler, so classes added during development work before the
+       next `npx tailwindcss` rebuild. The page does not depend on it. -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    if (window.tailwind) tailwind.config = {
+      darkMode: 'class',
+      theme: { extend: { fontFamily: { sans: ['Inter', 'ui-sans-serif', 'system-ui', 'Segoe UI', 'Roboto', 'sans-serif'] } } }
+    };
+  </script>
+
+  <!-- Graph libs (self-hosted) -->
+  <script src="assets/vendor/cytoscape/cytoscape.min.js"></script>
+  <script src="assets/vendor/cytoscape/dagre.min.js"></script>
+  <script src="assets/vendor/cytoscape/cytoscape-dagre.min.js"></script>
+
+  <style>
+    body, header, section, .card, input, button { transition: background-color .25s, color .25s, border-color .25s; }
+    /* Smooth accordion: animate grid row from 0fr to 1fr */
+    .accordion-body { display: grid; grid-template-rows: 0fr; transition: grid-template-rows .35s ease; }
+    .accordion-body > div { overflow: hidden; }
+    .plan-card.open .accordion-body { grid-template-rows: 1fr; }
+    .plan-card.open .chevron { transform: rotate(180deg); }
+    .fade-in { animation: fade .35s ease both; }
+    @keyframes fade { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+
+    /* GE side panel (slide-over) */
+    .ge-panel { visibility: hidden; pointer-events: none; transition: visibility 0s .3s; }
+    .ge-panel.open { visibility: visible; pointer-events: auto; transition-delay: 0s; }
+    .ge-backdrop { opacity: 0; transition: opacity .25s ease; }
+    .ge-panel.open .ge-backdrop { opacity: 1; }
+    .ge-drawer { transform: translateX(100%); transition: transform .3s cubic-bezier(.2, .8, .2, 1); }
+    .ge-panel.open .ge-drawer { transform: none; }
+    details > summary::-webkit-details-marker { display: none; }
+  </style>
+</head>
+
+<body class="min-h-screen bg-slate-50 text-slate-900 dark:bg-slate-950 dark:text-slate-100 font-sans antialiased">
+
+  <!-- ============ Header ============ -->
+  <header class="sticky top-0 z-20 border-b border-slate-200 dark:border-slate-800 bg-white/80 dark:bg-slate-900/80 backdrop-blur">
+    <div class="max-w-6xl mx-auto px-4 h-16 flex items-center justify-between">
+      <div class="flex items-center gap-3">
+        <div class="w-9 h-9 rounded-lg bg-blue-600 text-white grid place-items-center shadow-sm">
+          <i class="fa-solid fa-route"></i>
+        </div>
+        <span class="font-semibold text-lg tracking-tight">TransferPath <span class="text-blue-600 dark:text-blue-400">SEP Planner</span></span>
+      </div>
+      <button id="themeToggle" aria-label="Toggle theme"
+        class="w-10 h-10 rounded-lg grid place-items-center border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-amber-300 hover:bg-slate-100 dark:hover:bg-slate-800">
+        <i class="fa-solid fa-moon dark:hidden"></i>
+        <i class="fa-solid fa-sun hidden dark:inline"></i>
+      </button>
+    </div>
+  </header>
+
+  <main class="max-w-6xl mx-auto px-4 py-8 space-y-8">
+
+    <!-- ============ Input section ============ -->
+    <section class="card rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-sm dark:shadow-black/30 p-6 sm:p-8">
+      <h1 class="text-2xl font-bold tracking-tight">Build your transfer plan</h1>
+      <p class="mt-1 text-slate-500 dark:text-slate-400">Pick where you are and where you're headed, add what you've finished, and we'll map the fastest path to transfer.</p>
+      <p class="mt-2 text-xs text-slate-500 dark:text-slate-400">Every section marked <span class="font-semibold text-red-600 dark:text-red-400">*</span> needs an answer. “No completed courses” and “No AP scores” count as answers.</p>
+
+      <!-- Required fields: ui.js validates them (validateForm) and fills each *Error slot; POST /generate-sep checks them again. -->
+      <div class="mt-6 grid gap-6 md:grid-cols-3">
+        <!-- College search -->
+        <div>
+          <label for="collegeInput" class="block text-sm font-medium mb-2">Community college <span class="text-red-600 dark:text-red-400" aria-hidden="true">*</span></label>
+          <div class="relative">
+            <i class="fa-solid fa-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"></i>
+            <input id="collegeInput" type="text" placeholder="Search colleges, e.g. Chabot College" autocomplete="off"
+              aria-required="true" aria-describedby="collegeError"
+              class="w-full pl-10 pr-3 py-2.5 rounded-lg border border-slate-300 dark:border-slate-700 aria-[invalid=true]:border-red-500 dark:aria-[invalid=true]:border-red-400 bg-white dark:bg-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500" />
+            <ul id="collegeList"
+              class="hidden absolute z-10 mt-1 w-full max-h-56 overflow-auto rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 shadow-lg"></ul>
+            <!-- Built-in options (work without the API), merged with GET /institutions. Edit freely. -->
+            <select id="collegeOptions" hidden aria-hidden="true" tabindex="-1">
+              <option>Chabot College</option>
+              <option>Laney College</option>
+              <option>College of Alameda</option>
+            </select>
+          </div>
+          <p id="collegeError" class="field-error hidden mt-1.5 text-xs font-medium text-red-600 dark:text-red-400"></p>
+        </div>
+
+        <!-- Target university search -->
+        <div>
+          <label for="targetInput" class="block text-sm font-medium mb-2">Target university <span class="text-red-600 dark:text-red-400" aria-hidden="true">*</span></label>
+          <div class="relative">
+            <i class="fa-solid fa-building-columns absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"></i>
+            <input id="targetInput" type="text" placeholder="Search campuses, e.g. UC Berkeley" autocomplete="off"
+              aria-required="true" aria-describedby="targetError targetHelp"
+              class="w-full pl-10 pr-3 py-2.5 rounded-lg border border-slate-300 dark:border-slate-700 aria-[invalid=true]:border-red-500 dark:aria-[invalid=true]:border-red-400 bg-white dark:bg-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500" />
+            <ul id="targetList"
+              class="hidden absolute z-10 mt-1 w-full max-h-72 overflow-auto rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 shadow-lg"></ul>
+            <!-- Built-in options; each <optgroup> label becomes a section header in the dropdown. -->
+            <select id="targetOptions" hidden aria-hidden="true" tabindex="-1">
+              <optgroup label="UC Campuses">
+                <option>UC Berkeley</option>
+                <option>UCLA</option>
+                <option>UC San Diego</option>
+              </optgroup>
+              <optgroup label="CSU Campuses">
+                <option>San Jose State University</option>
+                <option>San Francisco State University</option>
+              </optgroup>
+            </select>
+          </div>
+          <p id="targetError" class="field-error hidden mt-1.5 text-xs font-medium text-red-600 dark:text-red-400"></p>
+          <p id="targetHelp" class="mt-1.5 text-xs text-slate-500 dark:text-slate-400">UC and CSU campuses</p>
+        </div>
+
+        <!-- Intended major search -->
+        <div>
+          <label for="majorInput" class="block text-sm font-medium mb-2">Intended major <span class="text-red-600 dark:text-red-400" aria-hidden="true">*</span></label>
+          <div class="relative">
+            <i class="fa-solid fa-graduation-cap absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"></i>
+            <input id="majorInput" type="text" placeholder="Search majors, e.g. Computer Science" autocomplete="off"
+              aria-required="true" aria-describedby="majorError"
+              class="w-full pl-10 pr-3 py-2.5 rounded-lg border border-slate-300 dark:border-slate-700 aria-[invalid=true]:border-red-500 dark:aria-[invalid=true]:border-red-400 bg-white dark:bg-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500" />
+            <ul id="majorList"
+              class="hidden absolute z-10 mt-1 w-full max-h-72 overflow-auto rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 shadow-lg"></ul>
+            <!-- Built-in options. -->
+            <select id="majorOptions" hidden aria-hidden="true" tabindex="-1">
+              <option>Computer Science</option>
+              <option>Computer Engineering</option>
+              <option>Electrical Engineering</option>
+            </select>
+          </div>
+          <p id="majorError" class="field-error hidden mt-1.5 text-xs font-medium text-red-600 dark:text-red-400"></p>
+        </div>
+      </div>
+
+      <div class="mt-6 grid gap-6 md:grid-cols-2">
+
+        <!-- Completed courses (tags), or explicitly none -->
+        <div id="completedSection" role="group" aria-labelledby="courseLabel">
+          <label id="courseLabel" for="courseInput" class="block text-sm font-medium mb-2">Completed courses <span class="text-red-600 dark:text-red-400" aria-hidden="true">*</span><span class="sr-only"> (required)</span></label>
+          <div id="tagBox"
+            class="relative flex flex-wrap items-center gap-2 min-h-[54px] px-2 py-1.5 rounded-lg border border-slate-300 dark:border-slate-700 data-[invalid=true]:border-red-500 dark:data-[invalid=true]:border-red-400 bg-white dark:bg-slate-800 focus-within:ring-2 focus-within:ring-blue-500 cursor-text">
+            <!-- Subject filter chip, shown after a category is chosen (filled by ui.js) -->
+            <span id="courseFilter"
+              class="hidden inline-flex items-center gap-1.5 pl-2.5 pr-1.5 py-1 rounded-md text-sm font-medium ring-1 bg-blue-50 text-blue-700 ring-blue-200 dark:bg-blue-500/10 dark:text-blue-300 dark:ring-blue-500/30">
+              <i class="fa-solid fa-layer-group text-xs"></i><span id="courseFilterName"></span>
+              <button type="button" id="courseFilterClear" aria-label="Search all subjects"
+                class="w-4 h-4 grid place-items-center rounded hover:bg-black/10 dark:hover:bg-white/10">
+                <i class="fa-solid fa-xmark text-[10px]"></i></button>
+            </span>
+            <input id="courseInput" type="text" placeholder="Search a subject or course, e.g. Math or CSCI 14" autocomplete="off"
+              role="combobox" aria-autocomplete="list" aria-controls="courseList" aria-expanded="false"
+              aria-describedby="completedError courseHelp"
+              class="flex-1 min-w-[140px] bg-transparent py-1 px-1 focus:outline-none placeholder-slate-400" />
+            <!-- Suggestions from GET /colleges/{college}/courses (filled by ui.js) -->
+            <ul id="courseList" role="listbox" aria-label="Matching courses"
+              class="hidden absolute left-0 top-full z-10 mt-1 w-full max-h-72 overflow-auto rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 shadow-lg"></ul>
+          </div>
+          <div class="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1">
+            <label class="inline-flex items-center gap-2 text-sm cursor-pointer has-[:disabled]:cursor-not-allowed has-[:disabled]:text-slate-400 dark:has-[:disabled]:text-slate-500">
+              <input id="noCompletedToggle" type="checkbox"
+                class="w-4 h-4 accent-blue-600 cursor-pointer disabled:cursor-not-allowed" />
+              No completed courses
+            </label>
+            <span id="noCompletedHint" class="hidden text-xs text-slate-500 dark:text-slate-400">Remove the courses above to choose this.</span>
+          </div>
+          <p id="completedError" class="field-error hidden mt-1.5 text-xs font-medium text-red-600 dark:text-red-400"></p>
+          <p id="courseHelp" class="mt-1.5 text-xs text-slate-500 dark:text-slate-400">Pick a subject to narrow the list, or a course to add: click, or ↑ ↓ then Enter · Esc closes · Backspace removes the last item</p>
+        </div>
+
+        <!-- AP scores (subject + score + Add, tags below), or explicitly none -->
+        <div id="apSection" role="group" aria-labelledby="apLabel">
+          <label id="apLabel" for="apSubjectSelect" class="block text-sm font-medium mb-2">AP scores <span class="text-red-600 dark:text-red-400" aria-hidden="true">*</span><span class="sr-only"> (required)</span></label>
+          <div class="flex gap-2">
+            <div class="relative flex-1 min-w-0">
+              <select id="apSubjectSelect" aria-describedby="apError apHelp"
+                class="w-full appearance-none pl-3 pr-9 py-2.5 rounded-lg border border-slate-300 dark:border-slate-700 aria-[invalid=true]:border-red-500 dark:aria-[invalid=true]:border-red-400 bg-white dark:bg-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-500 cursor-pointer transition">
+                <option value="">Select AP subject…</option>
+                <option>AP Calculus AB</option>
+                <option>AP Calculus BC</option>
+                <option>AP Computer Science A</option>
+                <option>AP Physics C: Mechanics</option>
+                <option>AP Physics C: Electricity and Magnetism</option>
+                <option>AP Statistics</option>
+                <option>AP Macroeconomics</option>
+                <option>AP Microeconomics</option>
+                <option>AP English Language and Composition</option>
+                <option>AP Psychology</option>
+              </select>
+              <i class="fa-solid fa-chevron-down absolute right-3 top-1/2 -translate-y-1/2 text-xs text-slate-400 pointer-events-none"></i>
+            </div>
+            <div class="relative w-24 shrink-0">
+              <select id="apScoreSelect" aria-label="AP score" aria-describedby="apError"
+                class="w-full appearance-none pl-3 pr-8 py-2.5 rounded-lg border border-slate-300 dark:border-slate-700 aria-[invalid=true]:border-red-500 dark:aria-[invalid=true]:border-red-400 bg-white dark:bg-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-500 cursor-pointer transition">
+                <option value="">Score</option>
+                <option value="5">5</option>
+                <option value="4">4</option>
+                <option value="3">3</option>
+              </select>
+              <i class="fa-solid fa-chevron-down absolute right-3 top-1/2 -translate-y-1/2 text-xs text-slate-400 pointer-events-none"></i>
+            </div>
+            <button id="apAddBtn" type="button" disabled
+              class="shrink-0 inline-flex items-center gap-1.5 px-4 rounded-lg bg-blue-600 hover:bg-blue-700 text-white text-sm font-semibold shadow-sm focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 dark:focus:ring-offset-slate-900 transition disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-blue-600">
+              <i class="fa-solid fa-plus text-xs"></i> Add
+            </button>
+          </div>
+          <div id="apTags" class="mt-2 flex flex-wrap gap-2 empty:hidden"></div>
+          <div class="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1">
+            <label class="inline-flex items-center gap-2 text-sm cursor-pointer has-[:disabled]:cursor-not-allowed has-[:disabled]:text-slate-400 dark:has-[:disabled]:text-slate-500">
+              <input id="noApToggle" type="checkbox"
+                class="w-4 h-4 accent-blue-600 cursor-pointer disabled:cursor-not-allowed" />
+              No AP scores
+            </label>
+            <span id="noApHint" class="hidden text-xs text-slate-500 dark:text-slate-400">Remove the AP scores above to choose this.</span>
+          </div>
+          <p id="apError" class="field-error hidden mt-1.5 text-xs font-medium text-red-600 dark:text-red-400"></p>
+          <p id="apHelp" class="mt-1.5 text-xs text-slate-500 dark:text-slate-400">Scores of 3 or higher can earn college credit · Adding a subject again updates its score</p>
+        </div>
+      </div>
+
+      <!-- GE pathway (segmented control); nothing is selected until the student picks one. The values are
+           GE pathway ids; ui.js fills each summary (and any extra pathway) from GET /ge-pathways. -->
+      <fieldset id="geGroup" role="radiogroup" aria-required="true" aria-describedby="geError geHelp" class="mt-6">
+        <legend class="block text-sm font-medium mb-2">GE pathway <span class="text-red-600 dark:text-red-400" aria-hidden="true">*</span></legend>
+        <div id="geFrame" class="grid grid-cols-1 sm:grid-cols-3 gap-1 p-1 rounded-lg bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 data-[invalid=true]:border-red-500 dark:data-[invalid=true]:border-red-400">
+          <label class="cursor-pointer">
+            <input type="radio" name="gePathway" value="cal_getc" class="peer sr-only" />
+            <span class="block rounded-md px-3 py-1.5 text-center text-slate-600 dark:text-slate-300 transition peer-checked:bg-white dark:peer-checked:bg-slate-700 peer-checked:text-slate-900 dark:peer-checked:text-white peer-checked:shadow-sm peer-focus-visible:ring-2 peer-focus-visible:ring-blue-500">
+              <span class="block text-sm font-semibold">Cal-GETC</span>
+              <span data-ge-summary class="block text-[11px] text-slate-500 dark:text-slate-400">UC + CSU</span>
+            </span>
+          </label>
+          <label class="cursor-pointer">
+            <input type="radio" name="gePathway" value="igetc" class="peer sr-only" />
+            <span class="block rounded-md px-3 py-1.5 text-center text-slate-600 dark:text-slate-300 transition peer-checked:bg-white dark:peer-checked:bg-slate-700 peer-checked:text-slate-900 dark:peer-checked:text-white peer-checked:shadow-sm peer-focus-visible:ring-2 peer-focus-visible:ring-blue-500">
+              <span class="block text-sm font-semibold">IGETC</span>
+              <span data-ge-summary class="block text-[11px] text-slate-500 dark:text-slate-400">Continuing students</span>
+            </span>
+          </label>
+          <label class="cursor-pointer">
+            <input type="radio" name="gePathway" value="seven_course_pattern" class="peer sr-only" />
+            <span class="block rounded-md px-3 py-1.5 text-center text-slate-600 dark:text-slate-300 transition peer-checked:bg-white dark:peer-checked:bg-slate-700 peer-checked:text-slate-900 dark:peer-checked:text-white peer-checked:shadow-sm peer-focus-visible:ring-2 peer-focus-visible:ring-blue-500">
+              <span class="block text-sm font-semibold">UC 7-Course Pattern</span>
+              <span data-ge-summary class="block text-[11px] text-slate-500 dark:text-slate-400">UC admission</span>
+            </span>
+          </label>
+        </div>
+        <p id="geError" class="field-error hidden mt-1.5 text-xs font-medium text-red-600 dark:text-red-400"></p>
+        <p id="geHelp" class="mt-1.5 text-xs text-slate-500 dark:text-slate-400">Your pathway decides which GE requirements are planned. Choose courses for them in your plan's terms (Summer first).</p>
+      </fieldset>
+
+      <div class="mt-6 grid gap-6 md:grid-cols-2">
+
+        <!-- Starting semester (options and the "Select…" placeholder filled by ui.js) -->
+        <div>
+          <label for="startTermSelect" class="block text-sm font-medium mb-2">Starting semester <span class="text-red-600 dark:text-red-400" aria-hidden="true">*</span></label>
+          <div class="relative">
+            <i class="fa-regular fa-calendar absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none"></i>
+            <select id="startTermSelect" aria-required="true" aria-describedby="termError termHelp"
+              class="w-full appearance-none pl-10 pr-9 py-2.5 rounded-lg border border-slate-300 dark:border-slate-700 aria-[invalid=true]:border-red-500 dark:aria-[invalid=true]:border-red-400 bg-white dark:bg-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-500 cursor-pointer"></select>
+            <i class="fa-solid fa-chevron-down absolute right-3 top-1/2 -translate-y-1/2 text-xs text-slate-400 pointer-events-none"></i>
+          </div>
+          <p id="termError" class="field-error hidden mt-1.5 text-xs font-medium text-red-600 dark:text-red-400"></p>
+          <p id="termHelp" class="mt-1.5 text-xs text-slate-500 dark:text-slate-400">Plans always end in a Spring term, ready for Fall transfer admission.</p>
+        </div>
+
+        <!-- Summer toggle: always a definite Yes / No -->
+        <div>
+          <span class="block text-sm font-medium mb-2">Summer classes</span>
+          <label for="summerToggle"
+            class="flex items-center justify-between gap-4 px-3 py-2 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 cursor-pointer hover:border-slate-400 dark:hover:border-slate-600">
+            <span class="flex items-center gap-3 min-w-0">
+              <i class="fa-solid fa-sun text-amber-500"></i>
+              <span class="min-w-0">
+                <span class="block text-sm font-medium">Include summer classes</span>
+                <span class="block text-xs text-slate-500 dark:text-slate-400">Up to 9 units per summer · for your remaining GE courses</span>
+              </span>
+            </span>
+            <span id="summerState" aria-hidden="true" class="ml-auto text-xs font-semibold text-slate-500 dark:text-slate-400">No</span>
+            <input id="summerToggle" type="checkbox" class="peer sr-only" />
+            <span aria-hidden="true"
+              class="relative w-10 h-6 shrink-0 rounded-full bg-slate-300 dark:bg-slate-600 transition-colors peer-checked:bg-blue-600 peer-focus-visible:ring-2 peer-focus-visible:ring-blue-500 after:content-[''] after:absolute after:top-0.5 after:left-0.5 after:w-5 after:h-5 after:rounded-full after:bg-white after:shadow after:transition-transform peer-checked:after:translate-x-4"></span>
+          </label>
+        </div>
+      </div>
+
+      <!-- Shown when the backend can't be reached (filled by ui.js) -->
+      <div id="apiStatus" class="hidden mt-6 rounded-lg border border-amber-200 dark:border-amber-500/30 bg-amber-50 dark:bg-amber-500/10 text-amber-900 dark:text-amber-200 px-4 py-3 text-sm"></div>
+
+      <div class="mt-8 flex flex-col sm:flex-row sm:items-center gap-4">
+        <!-- aria-disabled (not `disabled`) while the form is incomplete: it stays focusable, and a click shows
+             every missing answer instead of doing nothing. `disabled` is only used while a request runs. -->
+        <button id="generateBtn" type="button" aria-disabled="true" aria-describedby="generateHint"
+          class="shrink-0 w-full sm:w-auto inline-flex items-center justify-center gap-2 px-6 py-3 rounded-lg bg-blue-600 hover:bg-blue-700 active:bg-blue-800 text-white font-semibold shadow-md shadow-blue-600/20 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 dark:focus:ring-offset-slate-900 aria-disabled:bg-slate-200 aria-disabled:hover:bg-slate-200 aria-disabled:active:bg-slate-200 aria-disabled:text-slate-500 aria-disabled:shadow-none aria-disabled:cursor-not-allowed dark:aria-disabled:bg-slate-800 dark:aria-disabled:hover:bg-slate-800 dark:aria-disabled:active:bg-slate-800 dark:aria-disabled:text-slate-500 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-blue-600">
+          <i class="fa-solid fa-wand-magic-sparkles"></i> Generate SEP Plans
+        </button>
+        <p id="generateHint" class="hidden text-sm text-slate-500 dark:text-slate-400"></p>
+        <!-- Dev-only mock data injector for demos (filled by ui.js) -->
+        <div id="devTools" class="sm:ml-auto flex flex-wrap items-center gap-2 text-xs"></div>
+      </div>
+    </section>
+
+    <!-- ============ Results section ============ -->
+    <section id="results" class="hidden">
+      <div id="resultsBody" class="space-y-4"></div>
+    </section>
+  </main>
+
+  <!-- ============ GE requirements side panel ============ -->
+  <div id="gePanel" class="ge-panel fixed inset-0 z-40" aria-hidden="true">
+    <div id="geBackdrop" class="ge-backdrop absolute inset-0 bg-slate-900/40 dark:bg-black/60"></div>
+    <aside role="dialog" aria-modal="true" aria-labelledby="geTitle"
+      class="ge-drawer absolute right-0 top-0 h-full w-full sm:max-w-md flex flex-col bg-white dark:bg-slate-900 border-l border-slate-200 dark:border-slate-800 shadow-2xl dark:shadow-black/60">
+      <header class="flex items-start gap-3 p-5 border-b border-slate-200 dark:border-slate-800">
+        <div class="w-10 h-10 shrink-0 rounded-lg grid place-items-center bg-teal-100 text-teal-700 dark:bg-teal-500/15 dark:text-teal-300">
+          <i class="fa-solid fa-layer-group"></i>
+        </div>
+        <div class="flex-1 min-w-0">
+          <h2 id="geTitle" class="font-semibold text-lg leading-tight">GE requirements</h2>
+          <p id="geSubtitle" class="text-sm text-slate-500 dark:text-slate-400 truncate"></p>
+        </div>
+        <button id="geClose" aria-label="Close panel"
+          class="w-9 h-9 rounded-lg grid place-items-center text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-500">
+          <i class="fa-solid fa-xmark"></i>
+        </button>
+      </header>
+      <div id="geBody" class="flex-1 overflow-y-auto p-5 space-y-6"></div>
+      <footer class="px-5 py-3 border-t border-slate-200 dark:border-slate-800 text-xs text-slate-500 dark:text-slate-400">
+        <i class="fa-regular fa-square-check mr-1"></i> Check a GE course to mark it completed, or remove a GE choice. Both plans are rescheduled immediately.
+      </footer>
+    </aside>
+  </div>
+
+  <script src="api.js"></script>
+  <script src="ui.js"></script>
+</body>
+</html>
