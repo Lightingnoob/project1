@@ -1,0 +1,738 @@
+{
+  "schema_version": "1.0.0",
+  "dataset_id": "igetc_standards_v2_0_may_2019",
+  "source": {
+    "publisher": "Intersegmental Council of Academic Senates (ICAS)",
+    "document_title": "IGETC Standards, Policies & Procedures for Intersegmental General Education Transfer Curriculum",
+    "version": "2.0",
+    "status": "Final Version",
+    "date": "May 2019",
+    "source_url": "https://icas-ca.org/wp-content/uploads/2020/05/IGETC_STANDARDS_FINAL_VERSION_2.0.pdf",
+    "page_count": 39
+  },
+  "scope": {
+    "type": "statewide_general_education_standard",
+    "program_name": "Intersegmental General Education Transfer Curriculum",
+    "abbreviation": "IGETC",
+    "historical_standard": true,
+    "college_specific_course_list_included": false,
+    "note": "This document defines IGETC standards, policies, and area requirements. It does not itself provide the approved IGETC course list for a specific California community college; college-specific approved course lists were maintained through ASSIST."
+  },
+  "purpose": {
+    "intended_population": "California Community College transfer students",
+    "destinations": [
+      "California State University (CSU)",
+      "University of California (UC)"
+    ],
+    "function": "Lower-division general education transfer curriculum",
+    "not_an_admission_guarantee": true,
+    "not_the_only_ge_option": true
+  },
+  "traditional_igetc": {
+    "areas": [
+      {
+        "id": "1",
+        "name": "English Communication",
+        "requirements": {
+          "csu": {
+            "courses_required": 3,
+            "semester_units": 9,
+            "quarter_units_range": [
+              12,
+              15
+            ]
+          },
+          "uc": {
+            "courses_required": 2,
+            "subareas_required": [
+              "1A",
+              "1B"
+            ]
+          }
+        },
+        "subareas": [
+          {
+            "id": "1A",
+            "name": "English Composition",
+            "courses_required": 1,
+            "minimum_semester_units": 3,
+            "quarter_units_range": [
+              4,
+              5
+            ],
+            "transfer_scope": [
+              "CSU",
+              "UC"
+            ],
+            "ap_allowed": true,
+            "ib_allowed": false,
+            "notes": [
+              "First-semester English reading and written composition.",
+              "The standards specify substantial college-level expository writing and reading.",
+              "Successful completion of 1A is a prerequisite to 1B."
+            ]
+          },
+          {
+            "id": "1B",
+            "name": "Critical Thinking and Composition",
+            "courses_required": 1,
+            "minimum_semester_units": 3,
+            "quarter_units_range": [
+              4,
+              5
+            ],
+            "transfer_scope": [
+              "CSU",
+              "UC"
+            ],
+            "ap_allowed": false,
+            "ib_allowed": false,
+            "prerequisite_area": "1A",
+            "notes": [
+              "Course must combine critical thinking with substantial composition.",
+              "No AP or IB exam may satisfy this area."
+            ]
+          },
+          {
+            "id": "1C",
+            "name": "Oral Communication",
+            "courses_required": 1,
+            "minimum_semester_units": 3,
+            "minimum_quarter_units": 4,
+            "transfer_scope": [
+              "CSU"
+            ],
+            "required_for": [
+              "CSU"
+            ],
+            "not_required_for": [
+              "UC"
+            ],
+            "ap_allowed": false,
+            "ib_allowed": false,
+            "notes": [
+              "Requires faculty-supervised, faculty-evaluated oral presentations in the presence of others, physically or virtually."
+            ]
+          }
+        ]
+      },
+      {
+        "id": "2A",
+        "name": "Mathematical Concepts and Quantitative Reasoning",
+        "courses_required": 1,
+        "minimum_semester_units": 3,
+        "quarter_units_range": [
+          4,
+          5
+        ],
+        "transfer_scope": [
+          "CSU",
+          "UC"
+        ],
+        "notes": [
+          "One baccalaureate-level mathematics or statistics course.",
+          "The 2019 standard discusses prerequisite/equivalent preparation and the then-current Statistics Pathway transition."
+        ]
+      },
+      {
+        "id": "3",
+        "name": "Arts and Humanities",
+        "courses_required": 3,
+        "minimum_semester_units": 9,
+        "quarter_units_range": [
+          12,
+          15
+        ],
+        "distribution_rule": {
+          "minimum_from_arts": 1,
+          "minimum_from_humanities": 1,
+          "remaining_course": "3A or 3B"
+        },
+        "subareas": [
+          {
+            "id": "3A",
+            "name": "Arts"
+          },
+          {
+            "id": "3B",
+            "name": "Humanities"
+          }
+        ],
+        "transfer_scope": [
+          "CSU",
+          "UC"
+        ]
+      },
+      {
+        "id": "4",
+        "name": "Social and Behavioral Sciences",
+        "courses_required": 3,
+        "minimum_semester_units": 9,
+        "quarter_units_range": [
+          12,
+          15
+        ],
+        "minimum_academic_disciplines": 2,
+        "transfer_scope": [
+          "CSU",
+          "UC"
+        ]
+      },
+      {
+        "id": "5",
+        "name": "Physical and Biological Sciences",
+        "courses_required": 2,
+        "semester_units_range": [
+          7,
+          9
+        ],
+        "quarter_units_range": [
+          9,
+          12
+        ],
+        "distribution_rule": {
+          "physical_science_courses": 1,
+          "biological_science_courses": 1,
+          "laboratory_required": true,
+          "lab_must_correspond_to": "one of the Area 5 lecture courses"
+        },
+        "subareas": [
+          {
+            "id": "5A",
+            "name": "Physical Science"
+          },
+          {
+            "id": "5B",
+            "name": "Biological Science"
+          },
+          {
+            "id": "5C",
+            "name": "Laboratory",
+            "standalone_lab_minimum_units": {
+              "semester": 1,
+              "quarter": 1
+            }
+          }
+        ],
+        "transfer_scope": [
+          "CSU",
+          "UC"
+        ]
+      },
+      {
+        "id": "6",
+        "name": "Language Other Than English",
+        "subareas": [
+          {
+            "id": "6A",
+            "name": "Language Other Than English (LOTE)",
+            "required_for": [
+              "UC"
+            ],
+            "not_required_for": [
+              "CSU"
+            ],
+            "proficiency_standard": "Equivalent to two years / second level of high-school instruction in the same language."
+          }
+        ],
+        "transfer_scope": [
+          "UC"
+        ]
+      }
+    ]
+  },
+  "igetc_for_stem": {
+    "availability_rule": "Available only where the applicable Transfer Model Curriculum (TMC) explicitly authorizes IGETC for STEM.",
+    "historical_note": "The May 2019 document states that, as of May 2015, Chemistry, Biology, and Environmental Science allowed IGETC for STEM; this is a historical statement from the source and should not be treated as a current list.",
+    "before_transfer": {
+      "complete": [
+        "All required courses in Area 1 (except 1C for UC-bound students)",
+        "Area 2",
+        "Area 5",
+        "One course in Area 3A",
+        "One course in Area 3B",
+        "Two courses in Area 4 from two different disciplines"
+      ]
+    },
+    "deferred_until_after_transfer": [
+      "One remaining lower-division course in Area 3",
+      "One remaining lower-division course in Area 4",
+      "Area 6 for UC-bound students if not already satisfied through proficiency"
+    ],
+    "replacement_rule": "Deferred lower-division GE courses must be replaced before transfer with calculus and/or science courses required by the major."
+  },
+  "general_rules": {
+    "course_level_and_transferability": {
+      "must_be_baccalaureate_level": true,
+      "must_be_transferable_to": [
+        "CSU",
+        "UC"
+      ]
+    },
+    "multiple_area_use": {
+      "course_may_be_listed_in_multiple_areas": true,
+      "course_may_be_applied_to_only_one_area": true,
+      "exception": "Language Other Than English (LOTE)"
+    },
+    "minimum_course_units": {
+      "semester": 3,
+      "quarter": 4,
+      "lab_exception": true,
+      "math_english_sequence_exception": {
+        "applies_to_areas": [
+          "1A",
+          "2A"
+        ],
+        "smaller_courses_allowed_when_part_of_qualifying_sequence": true,
+        "minimum_grade_each": "C / 2.0"
+      }
+    },
+    "unit_conversion": {
+      "semester_to_quarter_multiplier": 1.5,
+      "instruction": "When combining semester and quarter units within an area, convert to a common unit basis."
+    },
+    "minimum_grade": {
+      "letter_grade": "C",
+      "minimum_gpa_value": 2.0,
+      "c_minus_accepted": false
+    },
+    "pass_no_pass": {
+      "accepted_if": "The college defines Pass/Credit as equivalent to C (2.0) or better."
+    },
+    "online_courses": {
+      "ccc": "May be used if approved through the IGETC review process.",
+      "non_ccc": "May be used subject to the same review standards as other non-CCC coursework."
+    },
+    "international_coursework": {
+      "generally_accepted_if": "Institution has United States regional accreditation.",
+      "general_non_us_exception": "Area 6 / LOTE may use qualifying international evidence."
+    },
+    "area_1_language_of_instruction": "Written communication/critical-thinking and oral communication coursework must be delivered in English."
+  },
+  "external_exam_credit": {
+    "general": {
+      "number_of_external_exams_limit": null,
+      "exam_date_limit": null
+    },
+    "ap": {
+      "minimum_score": 3,
+      "accepted_scores": [
+        3,
+        4,
+        5
+      ],
+      "default_certification_units": {
+        "semester": 3,
+        "quarter": 4
+      },
+      "one_exam_one_igetc_area_rule": true,
+      "exception": "LOTE",
+      "area_1b_available": false,
+      "area_1c_available": false,
+      "science_lab_rule": "Qualifying AP physical/biological science exams can satisfy Area 5 laboratory activity requirements as specified in the source.",
+      "exams": [
+        {
+          "exam": "Art History",
+          "igetc_area_options": [
+            "3A",
+            "3B"
+          ]
+        },
+        {
+          "exam": "Biology",
+          "igetc_areas": [
+            "5B",
+            "5C"
+          ],
+          "certification_semester_units": 4,
+          "certification_quarter_units": 5
+        },
+        {
+          "exam": "Calculus AB",
+          "igetc_areas": [
+            "2A"
+          ]
+        },
+        {
+          "exam": "Calculus BC",
+          "igetc_areas": [
+            "2A"
+          ]
+        },
+        {
+          "exam": "Calculus BC/AB subscore",
+          "igetc_areas": [
+            "2A"
+          ]
+        },
+        {
+          "exam": "Chemistry",
+          "igetc_areas": [
+            "5A",
+            "5C"
+          ],
+          "certification_semester_units": 4,
+          "certification_quarter_units": 5
+        },
+        {
+          "exam": "Chinese Language & Culture",
+          "igetc_areas": [
+            "3B",
+            "6A"
+          ]
+        },
+        {
+          "exam": "Macroeconomics",
+          "igetc_areas": [
+            "4"
+          ]
+        },
+        {
+          "exam": "Microeconomics",
+          "igetc_areas": [
+            "4"
+          ]
+        },
+        {
+          "exam": "English Language/Composition",
+          "igetc_areas": [
+            "1A"
+          ]
+        },
+        {
+          "exam": "English Literature/Composition",
+          "igetc_area_options": [
+            "1A",
+            "3B"
+          ]
+        },
+        {
+          "exam": "Environmental Science",
+          "igetc_areas": [
+            "5A",
+            "5C"
+          ],
+          "certification_semester_units": 3,
+          "certification_quarter_units": 4
+        },
+        {
+          "exam": "European History",
+          "igetc_area_options": [
+            "3B",
+            "4"
+          ]
+        },
+        {
+          "exam": "French Language & Culture",
+          "igetc_areas": [
+            "3B",
+            "6A"
+          ]
+        },
+        {
+          "exam": "French Literature",
+          "igetc_areas": [
+            "3B",
+            "6A"
+          ]
+        },
+        {
+          "exam": "German Language & Culture",
+          "igetc_areas": [
+            "3B",
+            "6A"
+          ]
+        },
+        {
+          "exam": "Comparative Government & Politics",
+          "igetc_areas": [
+            "4"
+          ]
+        },
+        {
+          "exam": "U.S. Government & Politics",
+          "igetc_areas": [
+            "4"
+          ],
+          "csu_american_institutions": [
+            "US-2"
+          ]
+        },
+        {
+          "exam": "Human Geography",
+          "igetc_areas": [
+            "4"
+          ]
+        },
+        {
+          "exam": "Italian Language & Culture",
+          "igetc_areas": [
+            "3B",
+            "6A"
+          ]
+        },
+        {
+          "exam": "Japanese Language & Culture",
+          "igetc_areas": [
+            "3B",
+            "6A"
+          ]
+        },
+        {
+          "exam": "Latin Literature or Latin: Vergil",
+          "igetc_areas": [
+            "3B",
+            "6A"
+          ]
+        },
+        {
+          "exam": "Latin",
+          "igetc_areas": [
+            "3B",
+            "6A"
+          ]
+        },
+        {
+          "exam": "Physics 1",
+          "igetc_areas": [
+            "5A",
+            "5C"
+          ],
+          "certification_semester_units": 4,
+          "certification_quarter_units": 5
+        },
+        {
+          "exam": "Physics 2",
+          "igetc_areas": [
+            "5A",
+            "5C"
+          ],
+          "certification_semester_units": 4,
+          "certification_quarter_units": 5
+        },
+        {
+          "exam": "Physics B",
+          "igetc_areas": [
+            "5A",
+            "5C"
+          ],
+          "certification_semester_units": 4,
+          "certification_quarter_units": 5
+        },
+        {
+          "exam": "Physics C: Mechanics",
+          "igetc_areas": [
+            "5A",
+            "5C"
+          ],
+          "certification_semester_units": 3,
+          "certification_quarter_units": 4
+        },
+        {
+          "exam": "Physics C: Electricity/Magnetism",
+          "igetc_areas": [
+            "5A",
+            "5C"
+          ],
+          "certification_semester_units": 3,
+          "certification_quarter_units": 4
+        },
+        {
+          "exam": "Psychology",
+          "igetc_areas": [
+            "4"
+          ]
+        },
+        {
+          "exam": "Spanish Language & Culture",
+          "igetc_areas": [
+            "3B",
+            "6A"
+          ]
+        },
+        {
+          "exam": "Spanish Literature & Culture",
+          "igetc_areas": [
+            "3B",
+            "6A"
+          ]
+        },
+        {
+          "exam": "Statistics",
+          "igetc_areas": [
+            "2A"
+          ]
+        },
+        {
+          "exam": "U.S. History",
+          "igetc_area_options": [
+            "3B",
+            "4"
+          ],
+          "csu_american_institutions": [
+            "US-1"
+          ]
+        },
+        {
+          "exam": "World History",
+          "igetc_area_options": [
+            "3B",
+            "4"
+          ]
+        }
+      ]
+    },
+    "ib": {
+      "minimum_score": 5,
+      "accepted_higher_level_scores": [
+        5,
+        6,
+        7
+      ],
+      "default_certification_units": {
+        "semester": 3,
+        "quarter": 4
+      },
+      "exams": [
+        {
+          "exam": "IB Biology HL",
+          "igetc_areas": [
+            "5B"
+          ]
+        },
+        {
+          "exam": "IB Chemistry HL",
+          "igetc_areas": [
+            "5A"
+          ]
+        },
+        {
+          "exam": "IB Economics HL",
+          "igetc_areas": [
+            "4"
+          ]
+        },
+        {
+          "exam": "IB Geography HL",
+          "igetc_areas": [
+            "4"
+          ]
+        },
+        {
+          "exam": "IB History (any region) HL",
+          "igetc_area_options": [
+            "3B",
+            "4"
+          ]
+        },
+        {
+          "exam": "IB Language A: Literature (any language except English) HL",
+          "igetc_areas": [
+            "3B",
+            "6A"
+          ]
+        },
+        {
+          "exam": "IB Language A: Language and Literature (any language except English) HL",
+          "igetc_areas": [
+            "3B",
+            "6A"
+          ]
+        },
+        {
+          "exam": "IB Language A: Literature (any language) HL",
+          "igetc_areas": [
+            "3B"
+          ]
+        },
+        {
+          "exam": "IB Language A: Language and Literature (any language) HL",
+          "igetc_areas": [
+            "3B"
+          ]
+        },
+        {
+          "exam": "IB Language B (any language) HL",
+          "igetc_areas": [
+            "6A"
+          ]
+        },
+        {
+          "exam": "IB Mathematics HL",
+          "igetc_areas": [
+            "2A"
+          ]
+        },
+        {
+          "exam": "IB Physics HL",
+          "igetc_areas": [
+            "5A"
+          ]
+        },
+        {
+          "exam": "IB Psychology HL",
+          "igetc_areas": [
+            "4"
+          ]
+        },
+        {
+          "exam": "IB Theatre HL",
+          "igetc_areas": [
+            "3A"
+          ]
+        }
+      ]
+    },
+    "clep": {
+      "accepted_for_igetc": false
+    },
+    "sat_act_general": {
+      "accepted_for_igetc": false,
+      "exception": "Historical SAT II language tests may be used for LOTE under the standards' Area 6 rules."
+    }
+  },
+  "lote": {
+    "area": "6A",
+    "required_for": [
+      "UC"
+    ],
+    "proficiency_level": "Equivalent to two years / second level of high-school instruction in the same language.",
+    "accepted_methods_include": [
+      "Approved college coursework",
+      "Defense Language Institute Foreign Language Center coursework with C or higher",
+      "Qualifying historical SAT II language score",
+      "AP language exam score 3 or higher",
+      "IB Higher Level language exam score 5 or higher",
+      "(I)GCSE/GCE O-level language exam grade A, B, or C",
+      "GCE A-level language exam grade A, B, or C",
+      "Institutional proficiency assessment documented at the required level",
+      "Other documented proficiency methods described in the standards"
+    ],
+    "high_school_grade_rule": {
+      "minus_plus_ignored": true,
+      "example_effect": "C- is treated as C for this UC high-school LOTE determination."
+    }
+  },
+  "certification": {
+    "full_certification": {
+      "authorized_by": "California Community College staff or faculty as determined by the college",
+      "destination": [
+        "CSU",
+        "UC"
+      ]
+    },
+    "partial_certification": {
+      "definition": "All but two courses on the IGETC pattern have been completed.",
+      "maximum_missing_courses": 2
+    },
+    "minimum_grade_reconfirmed": "C / 2.0; C- is not accepted for college coursework.",
+    "ap_minimum_score_reconfirmed": 3
+  },
+  "important_distinctions_for_software": {
+    "not_college_specific": true,
+    "college_specific_course_eligibility_must_come_from_assist": true,
+    "do_not_treat_as_7_course_pattern": true,
+    "do_not_treat_as_cal_getc": true,
+    "historical_relevance": "This is the 2019 IGETC standard. A planner for current students should keep it separate from later Cal-GETC rules and from the UC 7-course transfer admission pattern."
+  }
+}

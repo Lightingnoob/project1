@@ -1,0 +1,8 @@
+{
+  "name": "articulate-dag-graph",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": { "test": "node --test graph.test.js apWaiver.test.js chabotAp.test.js catalog.test.js" },
+  "engines": { "node": ">=18" }
+}

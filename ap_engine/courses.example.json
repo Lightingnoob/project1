@@ -1,0 +1,6 @@
+[
+  { "id": "A", "title": "Foundations (synthetic demo)", "units": 3, "prereqs": [] },
+  { "id": "B", "title": "Data Structures (synthetic demo)", "units": 3, "prereqs": ["A"] },
+  { "id": "C", "title": "Discrete Structures (synthetic demo)", "units": 3, "prereqs": ["A"] },
+  { "id": "D", "title": "Algorithms (synthetic demo)", "units": 3, "prereqs": ["B", "C"] }
+]

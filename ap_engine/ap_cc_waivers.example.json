@@ -1,0 +1,11 @@
+{
+  "institution_id": "demo_cc",
+  "note": "SYNTHETIC demo mapping onto courses.example.json. Replace with the community college's published AP chart; uc_equivalents should come from ASSIST articulation.",
+  "default_min_score": 3,
+  "rules": [
+    { "exam_id": "ap:computer_science_a", "waives": ["A"], "transfer_role": "major_prep",
+      "uc_equivalents": { "san_diego": ["CSE 8A"] } },
+    { "exam_id": "ap:calculus_ab", "waives": ["C"], "transfer_role": "major_prep",
+      "uc_equivalents": { "san_diego": ["MATH 20A"] } }
+  ]
+}
